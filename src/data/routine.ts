@@ -69,6 +69,16 @@ export const ROUTINE: Record<DietDayType, RoutineEntry[]> = {
   ],
 };
 
+/** Dia de folga/férias: sem escola. Vôlei, pré e pós-vôlei vêm da rotina do dia da semana. */
+export const ROUTINE_LIVRE: RoutineEntry[] = [
+  m('cafe', '08:00', 'Café da manhã', 'cafe'),
+  { id: 'treino', time: '09:30', kind: 'training', title: 'Treino' },
+  m('lanche-manha', '10:30', 'Lanche da manhã', 'lancheManha'),
+  m('almoco', '12:30', 'Almoço', 'almoco', 'almoco'),
+  m('lanche-tarde', '16:00', 'Lanche da tarde', 'lancheTarde'),
+  m('jantar', '19:30', 'Jantar', 'jantar', 'jantar'),
+];
+
 const jantarAnchor = (t: DietDayType) => (t === 'sabado' || t === 'domingo' ? 'refeicao-livre' : 'jantar');
 const creatina2Anchor: Record<DietDayType, string> = {
   academiaAlmoco: 'almoco', terca: 'pos-volei', quarta: 'almoco', sabado: 'almoco', domingo: 'almoco',

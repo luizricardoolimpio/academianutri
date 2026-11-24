@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import type { ScheduleItem } from '../../domain/schedule';
 
 const ICON: Record<ScheduleItem['kind'], string> = {
-  meal: '🍽️', supplement: '💊', training: '🏋️', volley: '🏐', water: '💧', wellness: '🙂',
+  meal: '🍽️', supplement: '💊', training: '🏋️', volley: '🏐', extra: '⭐', water: '💧', wellness: '🙂',
 };
 
 export function CheckItem({ item, done, onToggle, options }: { item: ScheduleItem; done: boolean; onToggle: () => void; options?: string[] }) {

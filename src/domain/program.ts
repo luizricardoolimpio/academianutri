@@ -1,4 +1,5 @@
-import { daysBetween, weekdayOf } from './dates';
+import { addDays, daysBetween, weekdayOf } from './dates';
+import { isPaused, type DateRange } from './days';
 import type { Phase, SessionId, Weekday } from './types';
 
 export const CYCLE_WEEKS = 12;
@@ -10,12 +11,25 @@ export function phaseOfWeek(week: number): Phase {
   return 'descarga';
 }
 
-export function programPosition(dateKey: string, startKey: string) {
+/** Dias pausados entre o início (incl.) e a data (excl.). */
+function pausedDaysBefore(startKey: string, dateKey: string, pauses: DateRange[]): number {
+  let n = 0;
+  for (const r of pauses) {
+    const from = r.from > startKey ? r.from : startKey;
+    const endExcl = r.to && addDays(r.to, 1) < dateKey ? addDays(r.to, 1) : dateKey;
+    if (endExcl > from) n += daysBetween(from, endExcl);
+  }
+  return n;
+}
+
+export function programPosition(dateKey: string, startKey: string, pauses: DateRange[] = []) {
+  const paused = isPaused(dateKey, pauses);
   const days = daysBetween(startKey, dateKey);
-  if (days < 0) return { started: false, startsOn: startKey, cycle: 1, week: 1, phase: 'base' as Phase };
-  const totalWeeks = Math.floor(days / 7);
+  if (days < 0) return { started: false, startsOn: startKey, cycle: 1, week: 1, phase: 'base' as Phase, paused };
+  const effective = days - pausedDaysBefore(startKey, dateKey, pauses);
+  const totalWeeks = Math.floor(effective / 7);
   const week = (totalWeeks % CYCLE_WEEKS) + 1;
-  return { started: true, startsOn: startKey, cycle: Math.floor(totalWeeks / CYCLE_WEEKS) + 1, week, phase: phaseOfWeek(week) };
+  return { started: true, startsOn: startKey, cycle: Math.floor(totalWeeks / CYCLE_WEEKS) + 1, week, phase: phaseOfWeek(week), paused };
 }
 
 export const WEEK_GRID: Record<Weekday, SessionId | null> = {

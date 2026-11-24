@@ -8,7 +8,7 @@ test.each([
 
 test('antes do início: não começou, mostra prévia da semana 1', () =>
   expect(programPosition('2026-11-25', '2026-11-30'))
-    .toEqual({ started: false, startsOn: '2026-11-30', cycle: 1, week: 1, phase: 'base' }));
+    .toEqual({ started: false, startsOn: '2026-11-30', cycle: 1, week: 1, phase: 'base', paused: false }));
 
 test('grade semanal', () => {
   expect(sessionForDate('2026-11-30')).toBe('inferiorA');
