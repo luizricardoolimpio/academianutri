@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 import { addDays, formatShort, mondayOf, todayKey, weekdayOf } from '../../domain/dates';
 import { programPosition, sessionForDate } from '../../domain/program';
-import { compliance } from '../../domain/progress';
-import { buildDay } from '../../domain/schedule';
+import { dayCompliance } from '../compliance';
 import { PHASE_LABEL, SESSION_SHORT, VOLLEY_SHORT, WEEKDAY_LABEL } from '../../domain/types';
-import { getDoneIds, getSession, getSetting } from '../../storage/db';
-import { loadSettings, saturdayCourtKey } from '../settings';
+import { getSession } from '../../storage/db';
+import { loadSettings } from '../settings';
 
 interface Row { date: string; pct: number; done: boolean }
 
@@ -23,11 +22,8 @@ export function Semana({ date: dateProp }: { date?: string } = {}) {
       const out: Row[] = [];
       for (let k = 0; k < 7; k++) {
         const d = addDays(monday, k);
-        const items = buildDay(d, { ...settings, saturdayCourt: await getSetting(saturdayCourtKey(d), true) });
-        const done = await getDoneIds(d);
-        const s = await getSession(d);
-        if (s?.completedAt) done.add('treino');
-        out.push({ date: d, pct: compliance(items, done), done: !!s?.completedAt });
+        const { pct } = await dayCompliance(d, settings);
+        out.push({ date: d, pct, done: !!(await getSession(d))?.completedAt });
       }
       setRows(out);
     })();

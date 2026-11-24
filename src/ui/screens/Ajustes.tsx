@@ -43,18 +43,25 @@ export function Ajustes() {
   const backup = async () => {
     try {
       await saveBackupNow();
-      setMsg({ ok: true, text: 'Backup gerado. No celular, escolha "Salvar no Drive" na tela de compartilhar.' });
+      setMsg({ ok: true, text: 'Backup gerado. Se abriu a tela de compartilhar, escolha "Salvar no Drive"; senão, o arquivo está em Downloads — envie-o para o Drive.' });
       await reload();
     } catch {
       setMsg({ ok: false, text: 'Backup cancelado.' });
     }
   };
-  const restore = async (file: File | undefined) => {
+  const restore = async (input: HTMLInputElement) => {
+    const file = input.files?.[0];
     if (!file) return;
-    if (!window.confirm('Restaurar substitui todos os registros atuais pelos do arquivo. Continuar?')) return;
-    const r = await importBackup(file);
-    setMsg(r.ok ? { ok: true, text: 'Backup restaurado.' } : { ok: false, text: r.error });
-    await reload();
+    try {
+      if (!window.confirm('Restaurar substitui todos os registros atuais pelos do arquivo. Continuar?')) return;
+      const r = await importBackup(file);
+      setMsg(r.ok ? { ok: true, text: 'Backup restaurado.' } : { ok: false, text: r.error });
+    } catch {
+      setMsg({ ok: false, text: 'Não foi possível restaurar; seus dados atuais foram mantidos.' });
+    } finally {
+      input.value = '';
+      await reload();
+    }
   };
 
   return (
@@ -67,10 +74,10 @@ export function Ajustes() {
         <p class="small" style="margin-top:0">Seus registros ficam só neste celular. {lastBackup ? `Último backup: ${formatShort(lastBackup)}.` : 'Nenhum backup ainda.'}</p>
         <div class="row" style="flex-wrap:wrap">
           <button class="btn" onClick={backup}>💾 Salvar backup</button>
-          <button class="btn secondary" onClick={async () => shareOrDownload(new Blob([await exportCsv()], { type: 'text/csv' }), `treino-volei-${today}.csv`)}>Exportar planilha (CSV)</button>
+          <button class="btn secondary" onClick={async () => { try { await shareOrDownload(new Blob([await exportCsv()], { type: 'text/csv' }), `treino-volei-${today}.csv`); } catch { /* cancelado */ } }}>Exportar planilha (CSV)</button>
         </div>
         <label class="small" style="display:block;margin-top:10px">Restaurar backup
-          <input type="file" accept="application/json,.json" onChange={(e) => restore((e.target as HTMLInputElement).files?.[0])} />
+          <input type="file" accept="application/json,.json" onChange={(e) => restore(e.target as HTMLInputElement)} />
         </label>
       </div>
 

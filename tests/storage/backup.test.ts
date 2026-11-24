@@ -4,6 +4,12 @@ import { exportBackup, importBackup, readText, exportCsv, needsBackupReminder, m
 
 beforeEach(freshDb);
 
+const STORE_NAMES = ['checks', 'sets', 'sessions', 'wellness', 'water', 'body', 'jumps', 'settings'];
+function full(over: Record<string, unknown[]>) {
+  const data = Object.fromEntries(STORE_NAMES.map((n) => [n, over[n] ?? []]));
+  return JSON.stringify({ app: 'treino-volei', version: 1, data });
+}
+
 test('backup ida e volta preserva tudo', async () => {
   await toggleCheck('2026-11-30', 'cafe');
   await saveSet({ date: '2026-11-30', sessionId: 'inferiorA', exerciseId: 'terra-hex', setIndex: 0, loadKg: 80 });
@@ -20,7 +26,9 @@ test('backup ida e volta preserva tudo', async () => {
 });
 
 test.each([['{}'], ['not json'], ['{"app":"outro","version":1,"data":{}}'], ['{"app":"treino-volei","version":99,"data":{}}'],
-  ['{"app":"treino-volei","version":1,"data":{"checks":"x"}}'], ['']])(
+  ['{"app":"treino-volei","version":1,"data":{"checks":"x"}}'], [''],
+  ['{"app":"treino-volei","version":1,"data":{}}'], ['{"app":"treino-volei","version":1,"data":[]}'],
+  [full({ checks: [{ foo: 1 }] })], [full({ water: [{ ml: 5 }] })], [full({ sets: [{ date: '2026-11-30' }] })]])(
   'backup inválido %j não apaga dados', async (txt) => {
     await toggleCheck('2026-11-30', 'cafe');
     const r = await importBackup(new File([txt], 'b.json'));
@@ -47,4 +55,39 @@ test('CSV diário tem cabeçalho e uma linha por dia com registro', async () => 
   const lines = csv.trim().split('\n');
   expect(lines[0]).toBe('data;itens_feitos;agua_ml;treino_rpe;peso_kg');
   expect(lines[1]).toBe('2026-11-30;1;1500;;');
+});
+
+test('backup inválido mantém também água e ajustes', async () => {
+  await addWater('2026-11-30', 1000);
+  await setSetting('startDate', '2026-11-30');
+  const r = await importBackup(new File([full({ checks: [{ foo: 1 }] })], 'b.json'));
+  expect(r.ok).toBe(false);
+  expect(await getSetting('startDate', '')).toBe('2026-11-30');
+  const { getWater } = await import('../../src/storage/db');
+  expect(await getWater('2026-11-30')).toBe(1000);
+});
+
+test('compartilhamento recusado (NotAllowedError) cai para download e registra o backup', async () => {
+  const share = vi.fn().mockRejectedValue(Object.assign(new Error('x'), { name: 'NotAllowedError' }));
+  const create = vi.fn(() => 'blob:x');
+  Object.assign(navigator, { share, canShare: () => true });
+  Object.assign(URL, { createObjectURL: create, revokeObjectURL: () => {} });
+  const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+  const { saveBackupNow } = await import('../../src/storage/backup');
+  await toggleCheck('2026-11-30', 'cafe');
+  await saveBackupNow(new Date(2026, 10, 30, 12));
+  expect(create).toHaveBeenCalled();
+  expect(click).toHaveBeenCalled();
+  click.mockRestore();
+  expect(await getSetting('lastBackupAt', null)).toBe('2026-11-30');
+  Object.assign(navigator, { share: undefined, canShare: undefined });
+});
+
+test('compartilhamento cancelado pelo usuário (AbortError) não registra backup', async () => {
+  const share = vi.fn().mockRejectedValue(Object.assign(new Error('x'), { name: 'AbortError' }));
+  Object.assign(navigator, { share, canShare: () => true });
+  const { saveBackupNow } = await import('../../src/storage/backup');
+  await expect(saveBackupNow(new Date(2026, 10, 30, 12))).rejects.toThrow();
+  expect(await getSetting('lastBackupAt', null)).toBeNull();
+  Object.assign(navigator, { share: undefined, canShare: undefined });
 });

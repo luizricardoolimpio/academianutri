@@ -75,7 +75,9 @@ export function Treino({ date }: { date: string }) {
   const setLoad = (k: number, v: string) => {
     const arr = [...(d.loads[ex.id] ?? Array.from({ length: pr.sets }, (_, j) => loadValue(j)))];
     arr[k] = v;
-    setD({ ...d, loads: { ...d.loads, [ex.id]: arr } });
+    setD((prev) => (prev ? { ...prev, loads: { ...prev.loads, [ex.id]: arr } } : prev));
+    // série já marcada: a correção da carga também é gravada
+    if (doneSet.has(k)) void saveSet({ date, sessionId, exerciseId: ex.id, setIndex: k, reps: pr.reps, loadKg: parseLoad(v) });
   };
   const bump = (k: number, delta: number) => {
     const n = Math.max(0, (parseLoad(loadValue(k)) ?? 0) + delta);
@@ -91,7 +93,7 @@ export function Treino({ date }: { date: string }) {
       await saveSet({ date, sessionId, exerciseId: ex.id, setIndex: k, reps: pr.reps, loadKg: parseLoad(loadValue(k)) });
       if (pr.restSec > 0) setRest({ seconds: pr.restSec, at: Date.now() });
     }
-    setD({ ...d, doneSets: { ...d.doneSets, [ex.id]: next } });
+    setD((prev) => (prev ? { ...prev, doneSets: { ...prev.doneSets, [ex.id]: next } } : prev));
   };
   const finish = async () => {
     await saveSession({ date, sessionId, rpe, reduced: d.reduced, completedAt: Date.now() });

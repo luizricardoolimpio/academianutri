@@ -65,3 +65,5 @@ th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line
   border: 2px solid transparent; cursor: pointer; padding: 6px 10px; color: var(--text); font: inherit; font-size: .8rem; }
 .chip-row .chip.current { border-color: var(--accent); }
 .scale button { min-height: 36px; }
+.check-wrap { border-bottom: 1px solid var(--line); }
+.check-wrap:last-child { border-bottom: 0; }

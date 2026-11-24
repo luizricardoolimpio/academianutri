@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'preact/hooks';
-import { DIET_NOTICES } from '../../data/diet';
+import { DIET_NOTICES, MEALS } from '../../data/diet';
 import { addDays, formatShort, mondayOf, todayKey, weekdayOf } from '../../domain/dates';
 import { programPosition, sessionForDate } from '../../domain/program';
-import { canMakeUp, compliance, suggestReduced } from '../../domain/progress';
+import { canMakeUp, suggestReduced } from '../../domain/progress';
 import { buildDay, type ScheduleItem } from '../../domain/schedule';
 import { PHASE_LABEL, SESSION_LABEL, WEEKDAY_LABEL, type SessionId } from '../../domain/types';
 import { needsBackupReminder, requestPersistence } from '../../storage/backup';
@@ -11,8 +11,8 @@ import { Banner } from '../components/Banner';
 import { CheckItem } from '../components/CheckItem';
 import { Scale } from '../components/Scale';
 import { loadSettings, saturdayCourtKey, type AppSettings } from '../settings';
+import { WATER_GOAL, withTracking } from '../compliance';
 
-const WATER_GOAL = 3500;
 
 interface State {
   settings: AppSettings;
@@ -34,6 +34,7 @@ async function load(date: string): Promise<State> {
   const items = buildDay(date, { enabledSupplements: settings.enabledSupplements, saturdayCourt: court, timeOverrides: settings.timeOverrides });
   const makeUps: State['makeUps'] = [];
   for (let d = mondayOf(date); d < date; d = addDays(d, 1)) {
+    if (d < settings.startDate) continue;
     const sid = sessionForDate(d);
     if (sid && canMakeUp(sid, d, date) && !(await getSession(d))?.completedAt) makeUps.push({ date: d, sessionId: sid });
   }
@@ -50,27 +51,27 @@ async function load(date: string): Promise<State> {
 }
 
 export function Hoje({ date: dateProp }: { date?: string } = {}) {
-  const date = dateProp ?? todayKey();
+  const [today, setToday] = useState(todayKey());
+  const date = dateProp ?? today;
   const [s, setS] = useState<State | null>(null);
   const [draft, setDraft] = useState<Partial<WellnessRec>>({});
   const reload = () => load(date).then(setS);
 
   useEffect(() => { void requestPersistence(); }, []);
+  useEffect(() => {
+    // O app pode ficar aberto de um dia para o outro: confere a data ao voltar e a cada minuto.
+    const refresh = () => setToday(todayKey());
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    const id = setInterval(refresh, 60_000);
+    return () => { document.removeEventListener('visibilitychange', refresh); window.removeEventListener('focus', refresh); clearInterval(id); };
+  }, []);
   useEffect(() => { void reload(); }, [date]);
   if (!s) return <section class="screen"><h1>Hoje</h1><p class="muted">Carregando…</p></section>;
 
   const pos = programPosition(date, s.settings.startDate);
-  const done = new Set(s.done);
-  if (s.sessionDone) done.add('treino');
-  if (s.water >= WATER_GOAL) done.add('agua');
-  if (s.wellness) done.add('bem-estar');
-  const trackable: ScheduleItem[] = [
-    ...s.items,
-    { id: 'agua', time: '23:59', kind: 'water', title: 'Água' },
-    { id: 'bem-estar', time: '00:00', kind: 'wellness', title: 'Bem-estar' },
-  ];
+  const { trackable, done, pct } = withTracking(s.items, s.done, { water: s.water, wellness: !!s.wellness, sessionDone: s.sessionDone });
   const doneCount = trackable.filter((i) => done.has(i.id)).length;
-  const pct = compliance(trackable, done);
   const reduced = suggestReduced(s.wellness);
   const isSaturday = weekdayOf(date) === 6;
 
@@ -129,12 +130,12 @@ export function Hoje({ date: dateProp }: { date?: string } = {}) {
         {s.items.map((item) =>
           item.kind === 'training' ? (
             <div class={done.has('treino') ? 'check-item done' : 'check-item'} key={item.id}>
-              <span aria-hidden="true">{done.has('treino') ? '✅' : '▶'}</span>
+              <input type="checkbox" aria-label={`Marcar treino feito: ${item.title}`} checked={done.has('treino')} onChange={() => toggle('treino')} />
               <span class="time">{item.time}</span>
-              <a class="title" href={`#/treino/${date}`}>{item.title}</a>
+              <a class="title" href={`#/treino/${date}`}>▶ {item.title}</a>
             </div>
           ) : (
-            <CheckItem key={item.id} item={item} done={done.has(item.id)} onToggle={() => toggle(item.id)} />
+            <CheckItem key={item.id} item={item} done={done.has(item.id)} onToggle={() => toggle(item.id)} options={item.mealId ? MEALS[item.mealId]?.options : undefined} />
           ),
         )}
       </div>

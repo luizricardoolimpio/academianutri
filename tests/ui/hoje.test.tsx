@@ -110,3 +110,39 @@ test('segunda lembra de pesar; 1ª segunda do mês lembra medidas e salto', asyn
   expect(await screen.findByText(/Dia de pesar/)).toBeInTheDocument();
   expect(screen.queryByText(/medidas e teste de salto/)).toBeNull();
 });
+
+test('ao voltar ao app depois da meia-noite, Hoje troca para o novo dia e grava nele', async () => {
+  at(2026, 11, 30, 23);
+  render(<Hoje />);
+  await screen.findByText(/Segunda 30\/11/);
+  vi.setSystemTime(new Date(2026, 11, 1, 7, 0));
+  document.dispatchEvent(new Event('visibilitychange'));
+  expect(await screen.findByText(/Terça 01\/12/)).toBeInTheDocument();
+  await userEvent.click(await screen.findByRole('checkbox', { name: /07:00.*Café/ }));
+  const { isChecked } = await import('../../src/storage/db');
+  await waitFor(async () => expect(await isChecked('2026-12-01', 'cafe')).toBe(true));
+  expect(await isChecked('2026-11-30', 'cafe')).toBe(false);
+});
+
+test('antes do início do programa não aparece treino perdido', async () => {
+  at(2026, 11, 29); // domingo antes do início em 30/11
+  render(<Hoje />);
+  await screen.findByText(/Programa começa em 30\/11/);
+  expect(screen.queryByRole('link', { name: /Repor hoje/ })).toBeNull();
+});
+
+test('refeição mostra as opções do protocolo sem atrapalhar o check', async () => {
+  at(2026, 11, 30);
+  render(<Hoje />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Opções: Café da manhã' }));
+  expect(screen.getByText(/40 g de whey/)).toBeInTheDocument();
+  expect(screen.getByRole('checkbox', { name: /06:30.*Café/ })).not.toBeChecked();
+});
+
+test('mobilidade de terça se marca com um toque', async () => {
+  at(2026, 12, 1);
+  render(<Hoje />);
+  const box = await screen.findByRole('checkbox', { name: /Marcar treino feito/ });
+  await userEvent.click(box);
+  await waitFor(() => expect(box).toBeChecked());
+});

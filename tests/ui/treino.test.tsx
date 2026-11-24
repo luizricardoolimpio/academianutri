@@ -77,3 +77,14 @@ test('dia sem treino mostra "Hoje é dia de descanso da academia"', async () => 
   render(<Treino date="2026-12-05" />);
   expect(await screen.findByText('Hoje é dia de descanso da academia.')).toBeInTheDocument();
 });
+
+test('corrigir a carga de uma série já feita salva o novo valor', async () => {
+  await openSupino();
+  const input = screen.getByLabelText('Carga série 1 (kg)');
+  await userEvent.type(input, '20');
+  await userEvent.click(screen.getByRole('button', { name: 'Marcar série 1 feita' }));
+  await waitFor(async () => expect(await lastLoad('supino-reto-barra')).toMatchObject({ loadKg: 20 }));
+  await userEvent.clear(input);
+  await userEvent.type(input, '22,5');
+  await waitFor(async () => expect(await lastLoad('supino-reto-barra')).toMatchObject({ loadKg: 22.5 }));
+});

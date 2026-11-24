@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'preact/hooks';
 import { EXERCISES } from '../../data/exercises';
 import { addDays, formatShort, mondayOf, todayKey } from '../../domain/dates';
-import { compliance, parseLoad } from '../../domain/progress';
-import { buildDay } from '../../domain/schedule';
-import { getDoneIds, getSession, getSetting, listAll, listBody, listJumps, saveBody, saveJump, setSetting, type BodyRec, type JumpRec, type SetRec } from '../../storage/db';
+import { parseLoad } from '../../domain/progress';
+import { dayCompliance } from '../compliance';
+import { getSetting, listAll, listBody, listJumps, saveBody, saveJump, setSetting, type BodyRec, type JumpRec, type SetRec } from '../../storage/db';
 import { LineChart } from '../components/LineChart';
-import { loadSettings, saturdayCourtKey } from '../settings';
+import { loadSettings } from '../settings';
 
 export const MEASURES: Array<{ key: string; label: string }> = [
   { key: 'gordura', label: '% Gordura' }, { key: 'massaMagra', label: 'Massa magra (kg)' },
@@ -34,10 +34,7 @@ async function weeklyCompliance(date: string): Promise<Data['weeks']> {
     for (let k = 0; k < 7; k++) {
       const d = addDays(monday, k);
       if (d > date) break;
-      const items = buildDay(d, { ...settings, saturdayCourt: await getSetting(saturdayCourtKey(d), true) });
-      const done = await getDoneIds(d);
-      if ((await getSession(d))?.completedAt) done.add('treino');
-      pcts.push(compliance(items, done));
+      pcts.push((await dayCompliance(d, settings)).pct);
     }
     out.push({ monday, pct: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0 });
   }

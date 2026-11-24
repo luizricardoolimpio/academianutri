@@ -14,6 +14,9 @@ export function readText(blob: Blob): Promise<string> {
   });
 }
 const VERSION = 1;
+const KEY_FIELD: Record<string, string> = {
+  checks: 'key', sets: 'id', sessions: 'date', wellness: 'date', water: 'date', body: 'date', jumps: 'date', settings: 'key',
+};
 
 export async function exportBackup(): Promise<Blob> {
   const data: Record<string, unknown[]> = {};
@@ -40,19 +43,30 @@ export async function importBackup(file: File): Promise<ImportResult> {
   const p = parsed as { app?: unknown; version?: unknown; data?: Record<string, unknown> };
   if (!p || p.app !== APP) return { ok: false, error: 'Este arquivo não é um backup deste app.' };
   if (p.version !== VERSION) return { ok: false, error: `Versão de backup não suportada (${String(p.version)}).` };
-  if (!p.data || typeof p.data !== 'object') return { ok: false, error: 'Backup sem dados.' };
-  for (const s of STORES) {
-    const v = p.data[s];
-    if (v !== undefined && (!Array.isArray(v) || v.some((r) => !r || typeof r !== 'object')))
-      return { ok: false, error: `Backup corrompido (${s}).` };
+  if (!p.data || typeof p.data !== 'object' || Array.isArray(p.data)) return { ok: false, error: 'Backup sem dados.' };
+  for (const st of STORES) {
+    const v = p.data[st];
+    if (!Array.isArray(v)) return { ok: false, error: `Backup incompleto ou corrompido (${st}).` };
+    const keyField = KEY_FIELD[st];
+    for (const r of v) {
+      if (!r || typeof r !== 'object' || typeof (r as Record<string, unknown>)[keyField] !== 'string')
+        return { ok: false, error: `Backup corrompido (${st}): registro sem "${keyField}".` };
+      if (st === 'sets' && (r as { loadKg?: unknown }).loadKg !== undefined && typeof (r as { loadKg?: unknown }).loadKg !== 'number')
+        return { ok: false, error: 'Backup corrompido (sets): carga inválida.' };
+    }
   }
   const db = await openDb();
   const tx = db.transaction([...STORES], 'readwrite');
-  for (const s of STORES) {
-    await tx.objectStore(s).clear();
-    for (const rec of (p.data[s] as object[] | undefined) ?? []) await tx.objectStore(s).put(rec);
+  try {
+    for (const st of STORES) {
+      await tx.objectStore(st).clear();
+      for (const rec of p.data[st] as object[]) await tx.objectStore(st).put(rec);
+    }
+    await tx.done;
+  } catch {
+    try { tx.abort(); } catch { /* já abortada */ }
+    return { ok: false, error: 'Não foi possível restaurar; seus dados atuais foram mantidos.' };
   }
-  await tx.done;
   return { ok: true };
 }
 
@@ -78,8 +92,13 @@ export async function shareOrDownload(blob: Blob, filename: string): Promise<voi
   const file = new File([blob], filename, { type: blob.type });
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
   if (nav.share && nav.canShare?.({ files: [file] })) {
-    await nav.share({ files: [file], title: filename });
-    return;
+    try {
+      await nav.share({ files: [file], title: filename });
+      return;
+    } catch (e) {
+      if ((e as { name?: string }).name === 'AbortError') throw e; // o usuário cancelou
+      // outros erros (ex.: NotAllowedError no iPhone): cai para o download
+    }
   }
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'), { href: url, download: filename });
