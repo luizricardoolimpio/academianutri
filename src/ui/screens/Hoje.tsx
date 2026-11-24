@@ -118,20 +118,6 @@ export function Hoje({ date: dateProp }: { date?: string } = {}) {
         </Banner>
       ))}
 
-      {!s.wellness ? (
-        <div class="card">
-          <h2 style="margin-top:0">Como você está hoje?</h2>
-          <Scale label="Sono" value={draft.sono} onChange={(v) => setDraft({ ...draft, sono: v })} />
-          <Scale label="Dor no joelho" value={draft.joelho} onChange={(v) => setDraft({ ...draft, joelho: v })} />
-          <Scale label="Dor no ombro" value={draft.ombro} onChange={(v) => setDraft({ ...draft, ombro: v })} />
-          <Scale label="Disposição" value={draft.disposicao} onChange={(v) => setDraft({ ...draft, disposicao: v })} />
-          <p class="small muted">Sono e disposição: 1 = péssimo, 5 = ótimo. Dor: 1 = nenhuma, 5 = muita.</p>
-          <button class="btn" onClick={saveW}>Salvar bem-estar</button>
-        </div>
-      ) : reduced ? (
-        <Banner>Sugestão: versão reduzida do treino hoje (sem saltos, uma série a menos). Ela aparece ao abrir o treino.</Banner>
-      ) : null}
-
       {isSaturday && (
         <label class="card row spread">
           <span>Tem quadra hoje?</span>
@@ -163,6 +149,20 @@ export function Hoje({ date: dateProp }: { date?: string } = {}) {
         </div>
         <div class="progress" aria-hidden="true"><span style={{ width: `${Math.min(100, (s.water / WATER_GOAL) * 100)}%`, background: 'var(--accent-2)' }} /></div>
       </div>
+      {!s.wellness ? (
+        <div class="card">
+          <h2 style="margin-top:0">Como você está hoje? <span class="muted small">(10 segundos)</span></h2>
+          <Scale label="Sono" value={draft.sono} onChange={(v) => setDraft({ ...draft, sono: v })} />
+          <Scale label="Dor no joelho" value={draft.joelho} onChange={(v) => setDraft({ ...draft, joelho: v })} />
+          <Scale label="Dor no ombro" value={draft.ombro} onChange={(v) => setDraft({ ...draft, ombro: v })} />
+          <Scale label="Disposição" value={draft.disposicao} onChange={(v) => setDraft({ ...draft, disposicao: v })} />
+          <p class="small muted">Sono e disposição: 1 = péssimo, 5 = ótimo. Dor: 1 = nenhuma, 5 = muita.</p>
+          <button class="btn" onClick={saveW}>Salvar bem-estar</button>
+        </div>
+      ) : reduced ? (
+        <Banner>Sugestão: versão reduzida do treino hoje (sem saltos, uma série a menos). Ela aparece ao abrir o treino.</Banner>
+      ) : null}
+
     </section>
   );
 }

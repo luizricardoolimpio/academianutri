@@ -96,3 +96,9 @@ test('conteúdo: almoço rápido tem marmita, shake e wrap; avisos fixos present
   expect(DIET_NOTICES.join(' ')).toMatch(/médico/);
   expect(SUPPLEMENTS.filter((s) => !s.enabledByDefault).map((s) => s.id).sort()).toEqual(['glutamina', 'psyllium']);
 });
+
+test('horário alterado por tipo de dia não afeta os outros dias', () => {
+  const o = { ...base, timeOverrides: { 'academiaAlmoco:almoco': '13:00' } };
+  expect(buildDay('2026-11-30', o).find((i) => i.id === 'almoco')!.time).toBe('13:00');
+  expect(buildDay('2026-12-01', o).find((i) => i.id === 'almoco')!.time).toBe('12:00');
+});

@@ -99,6 +99,7 @@ export function Treino({ date }: { date: string }) {
     navigate('#/hoje');
   };
   const last = d.last[ex.id];
+  const usesLoad = pr.restSec > 0 && !/\b(s|min|m)$/.test(pr.reps) && !pr.plyoContactsPerSet;
 
   return (
     <section class="screen">
@@ -110,11 +111,11 @@ export function Treino({ date }: { date: string }) {
         <input type="checkbox" checked={d.reduced} onChange={() => { setD({ ...d, reduced: !d.reduced }); setIdx(0); }} />
       </label>
 
-      <nav aria-label="Exercícios do treino" class="row" style="flex-wrap:wrap;gap:6px;margin:8px 0">
+      <nav aria-label="Exercícios do treino" class="chip-row">
         {plan.map((p, j) => (
-          <button key={p.exerciseId} class={j === i ? 'chip' : 'chip'} style={{ border: j === i ? '2px solid var(--accent)' : '2px solid transparent', cursor: 'pointer' }}
+          <button key={p.exerciseId} class={j === i ? 'chip current' : 'chip'}
             aria-label={`Ir para ${EXERCISES[p.exerciseId].name}`} onClick={() => setIdx(j)}>
-            {(d.doneSets[p.exerciseId]?.size ?? 0) >= p.sets ? '✅ ' : ''}{EXERCISES[p.exerciseId].name}
+            {(d.doneSets[p.exerciseId]?.size ?? 0) >= p.sets ? '✅' : j + 1} {EXERCISES[p.exerciseId].name}
           </button>
         ))}
       </nav>
@@ -148,10 +149,12 @@ export function Treino({ date }: { date: string }) {
               {doneSet.has(k) ? '✓' : k + 1}
             </button>
             <span class="title">{`Série ${k + 1} · ${pr.reps}`}</span>
+            {usesLoad && <>
             <button class="btn secondary small" aria-label={`Menos 2,5 kg na série ${k + 1}`} onClick={() => bump(k, -2.5)}>−</button>
             <input type="text" inputMode="decimal" style="width:76px" aria-label={`Carga série ${k + 1} (kg)`} placeholder="kg"
               value={loadValue(k)} onInput={(e) => setLoad(k, (e.target as HTMLInputElement).value)} />
             <button class="btn secondary small" aria-label={`Mais 2,5 kg na série ${k + 1}`} onClick={() => bump(k, 2.5)}>+</button>
+            </>}
           </div>
         ))}
       </div>

@@ -35,7 +35,7 @@ export function buildDay(dateKey: string, settings: DaySettings): ScheduleItem[]
 
   for (const e of ROUTINE[type]) {
     if (e.saturdayCourtOnly && !settings.saturdayCourt) continue;
-    const time = overrides[e.id] ?? e.time;
+    const time = overrides[`${type}:${e.id}`] ?? overrides[e.id] ?? e.time;
     timeOf[e.id] = time;
     if (e.kind === 'training') {
       const sessionId = sessionForDate(dateKey);
