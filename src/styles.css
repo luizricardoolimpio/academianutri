@@ -67,3 +67,6 @@ th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line
 .scale button { min-height: 36px; }
 .check-wrap { border-bottom: 1px solid var(--line); }
 .check-wrap:last-child { border-bottom: 0; }
+.chip.current-mode { background: var(--accent); color: #fff; }
+.chip input[type='radio'] { accent-color: #fff; }
+.check-wrap .icon-btn { background: none; border: 0; color: var(--muted); font-size: 1rem; min-width: 44px; min-height: 44px; cursor: pointer; }

@@ -3,8 +3,9 @@ export interface DateRange { from: string; to?: string }
 
 export const DAY_MODE_LABEL: Record<DayMode, string> = { normal: 'Normal', folga: 'Folga/Feriado', ferias: 'Férias' };
 
-export type ExtraKind = 'volei-quadra' | 'volei-areia' | 'jogo' | 'academia' | 'cardio' | 'outra';
-export interface Extra { id: string; kind: ExtraKind; time: string; durationMin?: number; note?: string }
+export type ExtraKind = 'volei-quadra' | 'volei-areia' | 'jogo' | 'academia' | 'cardio' | 'pilates' | 'natacao' | 'corrida' | 'beach-tenis' | 'outra';
+/** `name` = nome digitado quando o tipo é "outra". */
+export interface Extra { id: string; kind: ExtraKind; time: string; durationMin?: number; note?: string; name?: string }
 
 export const EXTRA_LABEL: Record<ExtraKind, string> = {
   'volei-quadra': 'Vôlei de quadra (extra)',
@@ -12,8 +13,16 @@ export const EXTRA_LABEL: Record<ExtraKind, string> = {
   jogo: 'Jogo / campeonato',
   academia: 'Academia (extra)',
   cardio: 'Cardio',
-  outra: 'Outra atividade',
+  pilates: 'Pilates',
+  natacao: 'Natação',
+  corrida: 'Corrida',
+  'beach-tenis': 'Beach tênis',
+  outra: 'Outra (digitar)',
 };
+
+export function extraTitle(x: Extra): string {
+  return x.kind === 'outra' ? x.name?.trim() || 'Outra atividade' : EXTRA_LABEL[x.kind];
+}
 
 export const isVolleyExtra = (k: ExtraKind) => k === 'volei-quadra' || k === 'volei-areia' || k === 'jogo';
 

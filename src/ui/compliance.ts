@@ -1,7 +1,8 @@
 import { compliance } from '../domain/progress';
 import { buildDay, type ScheduleItem } from '../domain/schedule';
-import { getDoneIds, getSession, getSetting, getWater, getWellness } from '../storage/db';
-import { saturdayCourtKey, type AppSettings } from './settings';
+import { getDoneIds, getSession, getWater, getWellness } from '../storage/db';
+import { loadDayContext } from './dayContext';
+import type { AppSettings } from './settings';
 
 export const WATER_GOAL = 3500;
 
@@ -20,7 +21,7 @@ export function withTracking(items: ScheduleItem[], doneIds: Set<string>, opts: 
 }
 
 export async function dayCompliance(date: string, settings: AppSettings) {
-  const items = buildDay(date, { ...settings, saturdayCourt: await getSetting(saturdayCourtKey(date), true) });
+  const items = buildDay(date, await loadDayContext(date, settings));
   return withTracking(items, await getDoneIds(date), {
     water: await getWater(date),
     wellness: !!(await getWellness(date)),

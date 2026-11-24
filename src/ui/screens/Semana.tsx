@@ -2,11 +2,13 @@ import { useEffect, useState } from 'preact/hooks';
 import { addDays, formatShort, mondayOf, todayKey, weekdayOf } from '../../domain/dates';
 import { programPosition, sessionForDate } from '../../domain/program';
 import { dayCompliance } from '../compliance';
+import { loadDayContext } from '../dayContext';
+import { DAY_MODE_LABEL, extraTitle, type DayMode, type Extra } from '../../domain/days';
 import { PHASE_LABEL, SESSION_SHORT, VOLLEY_SHORT, WEEKDAY_LABEL } from '../../domain/types';
 import { getSession } from '../../storage/db';
 import { loadSettings } from '../settings';
 
-interface Row { date: string; pct: number; done: boolean }
+interface Row { date: string; pct: number; done: boolean; mode: DayMode; extras: Extra[]; volleyOff: boolean; paused: boolean }
 
 export function Semana({ date: dateProp }: { date?: string } = {}) {
   const date = dateProp ?? todayKey();
@@ -23,7 +25,11 @@ export function Semana({ date: dateProp }: { date?: string } = {}) {
       for (let k = 0; k < 7; k++) {
         const d = addDays(monday, k);
         const { pct } = await dayCompliance(d, settings);
-        out.push({ date: d, pct, done: !!(await getSession(d))?.completedAt });
+        const ctx = await loadDayContext(d, settings);
+        out.push({
+          date: d, pct, done: !!(await getSession(d))?.completedAt, mode: ctx.dayMode, extras: ctx.extras, paused: !!ctx.paused,
+          volleyOff: Object.values(ctx.volleyOn ?? {}).some((v) => v === false),
+        });
       }
       setRows(out);
     })();
@@ -43,9 +49,14 @@ export function Semana({ date: dateProp }: { date?: string } = {}) {
                 const sid = sessionForDate(r.date);
                 return (
                   <tr key={r.date} style={{ fontWeight: r.date === date ? 700 : 400 }}>
-                    <th scope="row"><a href={r.date === todayKey() ? '#/hoje' : `#/treino/${r.date}`}>{WEEKDAY_LABEL[wd]}</a> <span class="muted small">{formatShort(r.date)}</span></th>
-                    <td>{sid ? `${r.done ? '✅ ' : ''}${SESSION_SHORT[sid]}` : '—'}</td>
-                    <td>{VOLLEY_SHORT[wd] ?? '—'}</td>
+                    <th scope="row">
+                      <a href={r.date === todayKey() ? '#/hoje' : `#/treino/${r.date}`}>{WEEKDAY_LABEL[wd]}</a> <span class="muted small">{formatShort(r.date)}</span>
+                      {r.mode !== 'normal' && <div><span class="chip">{DAY_MODE_LABEL[r.mode]}</span></div>}
+                    </th>
+                    <td>{sid && !r.paused ? `${r.done ? '✅ ' : ''}${SESSION_SHORT[sid]}` : r.paused ? 'Pausado' : '—'}</td>
+                    <td>
+                      {[r.volleyOff ? null : VOLLEY_SHORT[wd], ...r.extras.map((x) => `${extraTitle(x).split(' (')[0]} ${x.time.replace(':00', 'h')}`)].filter(Boolean).join(' · ') || '—'}
+                    </td>
                     <td>{`${r.pct}%`}</td>
                   </tr>
                 );

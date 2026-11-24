@@ -76,3 +76,17 @@ test('hasGame', () => {
   expect(hasGame([{ id: 'x', kind: 'volei-areia', time: '10:00' }])).toBe(false);
   expect(hasGame(undefined)).toBe(false);
 });
+
+test('atividades diferentes: pilates, natação, corrida, beach tênis e "outra" com nome digitado', () => {
+  const extras: Extra[] = [
+    { id: 'p', kind: 'pilates', time: '07:00' },
+    { id: 'n', kind: 'natacao', time: '08:00' },
+    { id: 'c', kind: 'corrida', time: '09:00' },
+    { id: 'b', kind: 'beach-tenis', time: '10:00' },
+    { id: 'o', kind: 'outra', time: '11:00', name: 'Stand up paddle' },
+  ];
+  const d = buildDay('2026-12-06', { ...base, extras });
+  expect(d.filter((i) => i.id.startsWith('extra-')).map((i) => i.title))
+    .toEqual(['Pilates', 'Natação', 'Corrida', 'Beach tênis', 'Stand up paddle']);
+  expect(d.find((i) => i.id === 'extra-o')!.kind).toBe('extra');
+});

@@ -1,5 +1,5 @@
 import { CARB_GRAMS, dietDayType } from '../data/diet';
-import { EXTRA_LABEL, isVolleyExtra, type DayMode, type Extra } from './days';
+import { extraTitle, isVolleyExtra, type DayMode, type Extra } from './days';
 import { weekdayOf } from './dates';
 import { dosesFor, ROUTINE, ROUTINE_LIVRE, type RoutineEntry } from '../data/routine';
 import { SUPPLEMENTS } from '../data/supplements';
@@ -93,7 +93,7 @@ export function buildDay(dateKey: string, settings: DaySettings): ScheduleItem[]
   for (const x of extras) {
     const id = `extra-${x.id}`;
     const detail = [x.durationMin ? `${x.durationMin} min` : '', x.note ?? ''].filter(Boolean).join(' · ') || undefined;
-    items.push({ id, time: dayTimes[id] ?? x.time, kind: isVolleyExtra(x.kind) ? 'volley' : 'extra', title: EXTRA_LABEL[x.kind], detail });
+    items.push({ id, time: dayTimes[id] ?? x.time, kind: isVolleyExtra(x.kind) ? 'volley' : 'extra', title: extraTitle(x), detail });
   }
 
   for (const d of dosesFor(type)) {

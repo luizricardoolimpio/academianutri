@@ -2,7 +2,8 @@ import { useEffect, useState } from 'preact/hooks';
 import { DIET_DAY_LABEL, type DietDayType } from '../../data/diet';
 import { ROUTINE } from '../../data/routine';
 import { SUPPLEMENTS } from '../../data/supplements';
-import { formatShort, todayKey } from '../../domain/dates';
+import { addDays, formatShort, todayKey } from '../../domain/dates';
+import { isPaused, type DateRange } from '../../domain/days';
 import { exportCsv, importBackup, saveBackupNow, shareOrDownload } from '../../storage/backup';
 import { getSetting, setSetting } from '../../storage/db';
 import { Banner } from '../components/Banner';
@@ -18,6 +19,7 @@ export function Ajustes() {
   const [times, setTimes] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [lastBackup, setLastBackup] = useState<string | null>(null);
+  const [vac, setVac] = useState({ from: '', to: '' });
 
   const reload = async () => {
     const st = await loadSettings(today);
@@ -85,6 +87,40 @@ export function Ajustes() {
       <div class="card grid2">
         <label>Início do programa<input type="date" value={start} onInput={(e) => setStart((e.target as HTMLInputElement).value)} /></label>
         <button class="btn secondary" style="align-self:end" onClick={async () => { if (/^\d{4}-\d{2}-\d{2}$/.test(start)) { await setSetting('startDate', start); await reload(); setMsg({ ok: true, text: 'Início salvo.' }); } }}>Salvar início</button>
+      </div>
+
+      <h2>Férias</h2>
+      <div class="card">
+        <p class="small muted" style="margin-top:0">Nos dias de férias o app usa a rotina de dia livre (sem escola). Você pode mudar um dia específico na tela Hoje.</p>
+        {s.vacations.map((r) => (
+          <div key={r.from} class="row spread small" style="margin:4px 0">
+            <span>{`${formatShort(r.from)} a ${formatShort(r.to ?? r.from)}`}</span>
+            <button class="btn secondary small" aria-label={`Remover férias ${formatShort(r.from)}`} onClick={async () => { await setSetting('vacations', s.vacations.filter((x) => x !== r)); await reload(); }}>Remover</button>
+          </div>
+        ))}
+        <div class="grid2">
+          <label class="small">Férias de<input type="date" value={vac.from} onInput={(e) => setVac({ ...vac, from: (e.target as HTMLInputElement).value })} /></label>
+          <label class="small">Férias até<input type="date" value={vac.to} onInput={(e) => setVac({ ...vac, to: (e.target as HTMLInputElement).value })} /></label>
+        </div>
+        <button class="btn secondary" style="margin-top:8px" onClick={async () => {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(vac.from) || !/^\d{4}-\d{2}-\d{2}$/.test(vac.to) || vac.to < vac.from) { setMsg({ ok: false, text: 'Informe as duas datas (a final depois da inicial).' }); return; }
+          await setSetting<DateRange[]>('vacations', [...s.vacations, { from: vac.from, to: vac.to }]);
+          setVac({ from: '', to: '' });
+          await reload();
+        }}>Adicionar férias</button>
+      </div>
+
+      <h2>Pausar programa</h2>
+      <div class="card">
+        <p class="small muted" style="margin-top:0">Para períodos sem treinar (viagem, lesão). As semanas não avançam e o treino some da tela Hoje; ao retomar, o programa continua da mesma semana.</p>
+        {isPaused(today, s.pauses) ? (
+          <button class="btn" onClick={async () => {
+            await setSetting<DateRange[]>('pauses', s.pauses.map((r) => (!r.to && r.from <= today ? { from: r.from, to: addDays(today, -1) } : r)).filter((r) => !r.to || r.to >= r.from));
+            await reload();
+          }}>Retomar programa</button>
+        ) : (
+          <button class="btn secondary" onClick={async () => { await setSetting<DateRange[]>('pauses', [...s.pauses, { from: today }]); await reload(); }}>Pausar programa</button>
+        )}
       </div>
 
       <h2>Suplementos</h2>

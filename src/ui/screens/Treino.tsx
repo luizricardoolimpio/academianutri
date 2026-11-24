@@ -8,6 +8,7 @@ import { deleteSet, getSession, getSetsOnDate, getWellness, lastLoad, saveSessio
 import { navigate } from '../../router';
 import { RestTimer } from '../components/RestTimer';
 import { loadSettings } from '../settings';
+import { loadDayContext } from '../dayContext';
 
 interface Loaded {
   sessionId: SessionId | null;
@@ -37,10 +38,12 @@ export function Treino({ date }: { date: string }) {
   useEffect(() => {
     (async () => {
       const settings = await loadSettings(date);
-      const pos = programPosition(date, settings.startDate);
+      const pos = programPosition(date, settings.startDate, settings.pauses);
       const sessionId = sessionForDate(date);
       const session = await getSession(date);
-      const reduced = session ? session.reduced : suggestReduced(await getWellness(date));
+      const ctx = await loadDayContext(date, settings);
+      const jumpDay = sessionId === 'inferiorA' || sessionId === 'inferiorB';
+      const reduced = session ? session.reduced : suggestReduced(await getWellness(date)) || (ctx.gameNear && jumpDay);
       const doneSets: Loaded['doneSets'] = {};
       const loads: Loaded['loads'] = {};
       for (const s of await getSetsOnDate(date)) {
