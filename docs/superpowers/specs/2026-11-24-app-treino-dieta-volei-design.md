@@ -1,6 +1,6 @@
 # App de Treino, Dieta e Vôlei — Documento de Projeto
 
-**Data:** 24/11/2026 · **Status:** rascunho para aprovação · **Usuário único:** Luiz Ricardo
+**Data:** 24/11/2026 · **Status:** revisado com as respostas do usuário — aguardando aprovação · **Usuário único:** Luiz Ricardo
 
 ---
 
@@ -41,7 +41,8 @@ reduzir peso — com foco em saúde e bem-estar, **sem treinos pesados demais**.
 - Contagem de calorias/macros por alimento, código de barras, banco de alimentos.
 - Medição de salto por câmera/sensor (apps como VERT/VertMax fazem isso; aqui o salto é registrado manualmente).
 - Prescrever suplementos novos. A lista "avançada" do Plano de Performance (beta-alanina, HMB etc.) **não** entra no checklist.
-- Mudar a prescrição da nutricionista (quantidades e alimentos). O app organiza; não reescreve a dieta.
+- Reescrever a dieta inteira. Mantêm-se alimentos, opções e quantidades de proteína/legumes/frutas da nutricionista;
+  a única adaptação é a de carboidratos e refeições livres pedida pelo usuário (§7).
 
 **Anti-metas (seria fracasso mesmo funcionando)**
 - Registrar dar mais trabalho que a planilha (mais de ~2 toques por item ou digitação obrigatória).
@@ -90,8 +91,8 @@ reduzir peso — com foco em saúde e bem-estar, **sem treinos pesados demais**.
 │ Semana 3 · Fase Base             │   │ 2/7  Shock Pause Jumps           │
 │ ▓▓▓▓▓▓░░░░ 6 de 11 feitos        │   │ 4 × 5 · caixa 30 cm · desc. 90"  │
 │                                  │   │ [▶ vídeo]  [🖼 imagem]  [ℹ dicas]│
-│ ✅ 06h15 Glutamina 15g           │   │                                  │
-│ ✅ 06h30 Café da manhã  (opção 1)│   │ Série 1  ✅ 5 reps               │
+│ ✅ 06h30 Café + Stimerex         │   │                                  │
+│ ✅ 06h30 Creatina (dose 1)       │   │ Série 1  ✅ 5 reps               │
 │ ✅ 09h30 Lanche manhã            │   │ Série 2  ✅ 5 reps               │
 │ ▶  11h30 TREINO Inferior A       │   │ Série 3  ☐  [ toque p/ feito ]   │
 │ ☐  12h25 Almoço rápido (marmita) │   │ Série 4  ☐                       │
@@ -139,7 +140,8 @@ reduzir peso — com foco em saúde e bem-estar, **sem treinos pesados demais**.
 ### 5.4 Tecnologia (decisão do construtor, aceita na abordagem A)
 
 - PWA estática: HTML + JavaScript (framework leve, ex. Preact/Vite) + service worker para offline.
-- Sem servidor. Hospedagem estática gratuita apontando para o repositório `academianutri` (ver pergunta em aberto §9).
+- Sem servidor. Hospedagem gratuita no **GitHub Pages**, com o repositório `academianutri` tornado **público**
+  (decisão do usuário). Nada pessoal além do plano vai para o repositório; registros ficam só no celular.
 - Testes automatizados da lógica (qual treino é hoje, progressão de semana, cálculo de cumprimento) e teste
   em navegador simulando celular.
 
@@ -177,14 +179,27 @@ usa as semanas 9–10 e a Fase 3 (Potência). Volumes reduzidos conforme §6.1.
 
 ## 7. Plano alimentar
 
-Fonte: **Protocolo Alimentar da nutricionista (ciclo de carboidratos, 10/2023)** — quantidades e opções mantidas.
+Fonte: **Protocolo Alimentar da nutricionista (10/2023)** — alimentos, opções e quantidades mantidos, **com duas adaptações
+pedidas pelo usuário**: carboidrato nunca zerado (a fase de pouco carbo não fez bem com a rotina atual) e duas refeições livres.
+O app mostra o aviso: *"Carboidratos e refeições livres adaptados a pedido; vale mostrar à nutricionista."*
 
-- **Regras gerais no app:** 3–4 L de água/dia; uma refeição livre por semana; evitar industrializados, açúcar,
+- **Regras gerais no app:** 3–4 L de água/dia; **duas refeições livres por semana — sábado e domingo à noite**; evitar industrializados, açúcar,
   bebidas açucaradas; refrigerante zero, café e chás liberados; temperos naturais, sal moderado.
-- **Suplementos (checklist diário):** glutamina 15 g em jejum · creatina (2 doses/dia, conforme protocolo) ·
-  psyllium 3×/dia nas refeições · ômega 3 (3 cápsulas após refeições) · polivitamínico após o almoço · whey conforme refeições.
-- **Ciclo de carboidratos:** o protocolo zera o carboidrato no almoço e no jantar 5×/semana (só legumes, folhosos e proteína).
-  Os dias com carboidrato ficam nos dias de maior gasto — ver pergunta em aberto §9.
+- **Suplementos (checklist diário — o que o usuário toma hoje):** termogênico **Stimerex** no café da manhã
+  (nunca depois das 14h, para não atrapalhar o sono nos dias de vôlei até 22h30) · creatina (2 doses/dia, conforme protocolo) ·
+  ômega 3 (3 cápsulas após refeições) · polivitamínico após o almoço · whey conforme refeições.
+  Glutamina e psyllium ficam cadastrados mas **desligados** (o usuário não está tomando); ligam com um toque em Ajustes.
+  Aviso no app: termogênico tem estimulantes — combinar com o médico, sobretudo com treino intenso à noite.
+- **Carboidrato em todas as refeições principais, em porção ajustada ao gasto do dia** (decisão do usuário: reduzido, nunca zero).
+  Porções de referência do próprio protocolo (arroz, batata, mandioca, macarrão, batata-doce, cozidos):
+
+  | Tipo de dia | Almoço | Jantar | Pré-atividade |
+  |---|---|---|---|
+  | **Dia de gasto alto** — ter (quadra), qua (treino + areia), sáb (areia + quadra) | 100 g | 70 g (antes do vôlei) | fruta + fonte de carbo das opções pré-treino do Plano (banana + aveia, batata-doce + ovo, pão + queijo) |
+  | **Dia de academia no almoço** — seg, qui, sex | 70 g (ou shake com frutas) | 50 g | fruta no lanche das 9h30 |
+  | **Dia leve** — dom | 70 g | refeição livre | — |
+
+  Sábado e domingo à noite: refeição livre ("evitar exageros", como no Plano).
 - **Almoço rápido (seg, qui, sex — treino 11h30, aula às 13h):** prioridade para opções que cabem em ~25 min:
   1. **Marmita pronta** do protocolo (proteína 140–150 g + ≥150 g de legumes/folhosos), preparada no domingo/quarta;
   2. **Shake**: 2 scoops de whey + 250 ml de leite desnatado + morango e mamão (opção do protocolo) + fruta;
@@ -194,11 +209,11 @@ Fonte: **Protocolo Alimentar da nutricionista (ciclo de carboidratos, 10/2023)**
 
 | Tipo de dia | Linha do tempo |
 |---|---|
-| Seg/Qui/Sex (treino no almoço) | 06h15 glutamina · 06h30 café · 09h30 lanche manhã · 11h30 treino · 12h25 almoço rápido · 14h40 lanche tarde · 17h30 lanche · 19h45 jantar |
-| Ter (vôlei quadra à noite) | 07h café · 10h lanche · 12h almoço · 14h40 lanche · 17h30 lanche · 19h15 pré-vôlei · 20h vôlei · 22h45 pós-vôlei (whey + fruta) |
-| Qua (treino 11h45 + areia 21h) | 06h15 glutamina · 06h30 café · 09h30 lanche · 11h45 treino · 12h50 almoço · 16h lanche · 18h30 jantar leve · 20h15 pré-vôlei leve · 21h vôlei · 22h15 pós-vôlei |
-| Sáb (areia + quadra) | 06h45 café · 10h15 pré-vôlei · 11h vôlei areia · 13h15 almoço · 14h/15h vôlei quadra · 17h lanche pós · noite: refeição livre |
-| Dom (cardio + aulas à tarde) | 08h café · 09h cardio leve · 10h30 lanche · 12h30 almoço · 15h lanche · 19h jantar |
+| Seg/Qui/Sex (treino no almoço) | 06h30 café + termogênico · 09h30 lanche manhã · 11h30 treino · 12h25 almoço rápido · 14h40 lanche tarde · 17h30 lanche · 19h45 jantar |
+| Ter (vôlei quadra à noite) | 07h café + termogênico · 10h lanche · 12h almoço · 14h40 lanche · 17h30 lanche · 19h15 pré-vôlei · 20h vôlei · 22h45 pós-vôlei (whey + fruta) |
+| Qua (treino 11h45 + areia 21h) | 06h30 café + termogênico · 09h30 lanche · 11h45 treino · 12h50 almoço · 16h lanche · 18h30 jantar leve · 20h15 pré-vôlei leve · 21h vôlei · 22h15 pós-vôlei |
+| Sáb (areia + quadra) | 06h45 café + termogênico · 10h15 pré-vôlei · 11h vôlei areia · 13h15 almoço · 14h/15h vôlei quadra · 17h lanche pós · noite: refeição livre |
+| Dom (cardio + aulas à tarde) | 08h café · 09h cardio leve · 10h30 lanche · 12h30 almoço · 15h lanche · 19h refeição livre |
 
 ## 8. Conteúdo extra no repositório
 
@@ -207,17 +222,12 @@ Fonte: **Protocolo Alimentar da nutricionista (ciclo de carboidratos, 10/2023)**
 - `docs/pesquisa/artigos.md` — evidência sobre treino de força/pliometria para voleibol e para atletas master
   (busca com Elicit + PubMed), com resumo em português e link.
 
-## 9. Perguntas em aberto (do usuário)
+## 9. Decisões do usuário (respondidas em 24/11/2026)
 
-1. **Dias com carboidrato:** o protocolo zera carbo no almoço e no jantar 5×/semana; o Plano de Performance e a
-   planilha dizem "almoço COM carbo" quase todo dia. Proposta: **carbo no almoço de ter e sáb, e no jantar de ter e qua**
-   (dias de vôlei pesado). Confirmar — idealmente com a nutricionista.
-2. **Refeição livre:** o protocolo permite **uma** por semana; o Plano de Performance dava o domingo inteiro livre.
-   Proposta: seguir a nutricionista — **uma, sábado à noite**.
-3. **Hospedagem:** o repositório `academianutri` parece privado. Opções: (a) tornar o repositório público
-   (o código e o plano ficam visíveis; os registros nunca saem do celular); (b) manter privado e hospedar num serviço
-   gratuito que lê repositórios privados (Cloudflare Pages ou Netlify), o que exige criar uma conta gratuita.
-4. **Suplementos em uso hoje:** confirmar a lista (o Plano de Performance cita termogênico, que não está no protocolo da nutricionista).
+1. **Hospedagem:** tornar o repositório público e usar GitHub Pages.
+2. **Carboidratos:** a fase de pouco carbo não fez bem; manter carbo em todas as refeições, em quantidades reduzidas (§7).
+3. **Refeições livres:** duas — sábado e domingo à noite.
+4. **Suplementos:** volta a tomar o termogênico Stimerex; toma creatina, ômega 3, polivitamínico e whey; **não** toma glutamina nem psyllium.
 
 ## 10. Decisões do construtor (para revisão)
 
@@ -225,6 +235,7 @@ Fonte: **Protocolo Alimentar da nutricionista (ciclo de carboidratos, 10/2023)**
 - Ciclo de 12 semanas começando na segunda-feira seguinte à instalação; o usuário pode mudar a data.
 - Registro de peso semanal, medidas mensais, teste de salto mensal.
 - Check de bem-estar matinal com sugestão de treino reduzido.
+- Porções de carboidrato da tabela do §7 (100/70/50 g) derivadas das porções da nutricionista (70 g almoço, 50 g jantar).
 - Vídeos abrem no YouTube; texto de execução salvo offline.
 - Backup manual com aviso a cada 7 dias.
 - Treino perdido: a sessão fica marcada como "não feita"; na tela Hoje aparece "fazer hoje" se houver outro dia
