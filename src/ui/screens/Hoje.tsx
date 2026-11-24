@@ -6,7 +6,7 @@ import { canMakeUp, compliance, suggestReduced } from '../../domain/progress';
 import { buildDay, type ScheduleItem } from '../../domain/schedule';
 import { PHASE_LABEL, SESSION_LABEL, WEEKDAY_LABEL, type SessionId } from '../../domain/types';
 import { needsBackupReminder, requestPersistence } from '../../storage/backup';
-import { addWater, getDoneIds, getSession, getSetting, getWater, getWellness, saveWellness, setSetting, toggleCheck, type WellnessRec } from '../../storage/db';
+import { addWater, getDoneIds, listBody, getSession, getSetting, getWater, getWellness, saveWellness, setSetting, toggleCheck, type WellnessRec } from '../../storage/db';
 import { Banner } from '../components/Banner';
 import { CheckItem } from '../components/CheckItem';
 import { Scale } from '../components/Scale';
@@ -25,6 +25,7 @@ interface State {
   backup: boolean;
   noticesSeen: boolean;
   makeUps: Array<{ date: string; sessionId: SessionId }>;
+  weighedToday: boolean;
 }
 
 async function load(date: string): Promise<State> {
@@ -44,6 +45,7 @@ async function load(date: string): Promise<State> {
     sessionDone: !!(await getSession(date))?.completedAt,
     backup: await needsBackupReminder(new Date()),
     noticesSeen: await getSetting('noticesSeen', false),
+    weighedToday: (await listBody()).some((b) => b.date === date && b.weightKg !== undefined),
   };
 }
 
@@ -102,6 +104,13 @@ export function Hoje({ date: dateProp }: { date?: string } = {}) {
         <div class="row spread small"><span>{`${doneCount} de ${trackable.length} feitos`}</span><span>{pct}%</span></div>
         <div class="progress" aria-hidden="true"><span style={{ width: `${pct}%` }} /></div>
       </div>
+
+      {weekdayOf(date) === 1 && !s.weighedToday && (
+        <Banner tone="info">
+          Dia de pesar: em jejum, depois do banheiro. <a href="#/evolucao">Registrar peso</a>
+          {Number(date.slice(8)) <= 7 && <> · 1ª segunda do mês: medidas e teste de salto.</>}
+        </Banner>
+      )}
 
       {s.makeUps.map((m) => (
         <Banner key={m.date} tone="info">

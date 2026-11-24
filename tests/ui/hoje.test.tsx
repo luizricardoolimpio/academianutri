@@ -98,3 +98,15 @@ test('avisos da dieta aparecem na primeira vez', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Entendi' }));
   await waitFor(() => expect(screen.queryByText(/mostrar à sua nutricionista/)).toBeNull());
 });
+
+test('segunda lembra de pesar; 1ª segunda do mês lembra medidas e salto', async () => {
+  at(2026, 12, 7);
+  const { unmount } = render(<Hoje />);
+  expect(await screen.findByText(/Dia de pesar/)).toBeInTheDocument();
+  expect(screen.getByText(/medidas e teste de salto/)).toBeInTheDocument();
+  unmount();
+  at(2026, 12, 14);
+  render(<Hoje />);
+  expect(await screen.findByText(/Dia de pesar/)).toBeInTheDocument();
+  expect(screen.queryByText(/medidas e teste de salto/)).toBeNull();
+});
