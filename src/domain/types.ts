@@ -16,3 +16,15 @@ export const SESSION_LABEL: Record<SessionId, string> = {
 };
 export const WEEKDAY_LABEL = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 export const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+export interface Prescription {
+  exerciseId: string;
+  sets: number;
+  reps: string;
+  restSec: number;
+  load?: string;
+  rir?: string;
+  notes?: string;
+  /** Contatos de salto por série (só pliometria de membros inferiores). */
+  plyoContactsPerSet?: number;
+}
