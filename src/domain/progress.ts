@@ -30,3 +30,11 @@ export function canMakeUp(missed: SessionId, missedDate: string, today: string):
   const wd = weekdayOf(today);
   return wd === 2 || wd === 0;
 }
+
+export interface Wellness { sono: number; joelho: number; ombro: number; disposicao: number }
+
+/** Dor ≥ 3 em joelho/ombro ou sono ≤ 2 → sugerir a versão reduzida do treino. */
+export function suggestReduced(w: Wellness | undefined): boolean {
+  if (!w) return false;
+  return w.joelho >= 3 || w.ombro >= 3 || w.sono <= 2;
+}

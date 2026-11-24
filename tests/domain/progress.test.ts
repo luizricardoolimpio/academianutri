@@ -29,3 +29,13 @@ test('canMakeUp: superior vai para ter/dom da mesma semana; inferior nunca', () 
   expect(canMakeUp('superiorA', '2026-12-02', '2026-12-08')).toBe(false); // outra semana
   expect(canMakeUp('superiorA', '2026-11-25', '2026-11-24')).toBe(false); // antes do treino perdido
 });
+
+import { suggestReduced } from '../../src/domain/progress';
+test('suggestReduced: dor ≥ 3 ou sono ≤ 2', () => {
+  const ok = { date: 'x', sono: 4, joelho: 1, ombro: 1, disposicao: 4 };
+  expect(suggestReduced(ok)).toBe(false);
+  expect(suggestReduced({ ...ok, joelho: 3 })).toBe(true);
+  expect(suggestReduced({ ...ok, ombro: 4 })).toBe(true);
+  expect(suggestReduced({ ...ok, sono: 2 })).toBe(true);
+  expect(suggestReduced(undefined)).toBe(false);
+});
