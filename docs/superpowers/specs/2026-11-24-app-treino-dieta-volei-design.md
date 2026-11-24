@@ -251,3 +251,23 @@ O app mostra o aviso: *"Carboidratos e refeições livres adaptados a pedido; va
 - Correspondência exercício → vídeo → imagem, e textos de execução.
 - Visual (cores, tipografia), ícone do app, textos de interface.
 - Estrutura interna de código e testes.
+
+---
+
+## 12. Adendo (24/11/2026) — dias diferentes, atividades extras e pausa
+
+Pedido do usuário antes da publicação: feriados, férias e dias sem trabalho mudam a rotina; às vezes há campeonato,
+vôlei extra ou academia em outro horário. Aprovado com estas decisões:
+
+- **Tipo do dia** no topo de Hoje: **Normal · Folga/Feriado · Férias**. Em Ajustes, **períodos de férias** (de/até) marcam
+  os dias automaticamente; a escolha feita no próprio dia prevalece.
+- **Dia de folga/férias:** linha do tempo de **dia livre** (café 08h, lanche 10h30, almoço 12h30, lanche 16h, jantar 19h30),
+  sem escola/intervalos. O treino de academia do dia permanece com horário livre (padrão 09h30, ajustável). O vôlei
+  do dia aparece com o interruptor **"Teve vôlei hoje?"** (padrão sim). Carbo: **gasto alto** se houver vôlei ou jogo, senão
+  70/50. Sábado e domingo à noite continuam com refeição livre.
+- **"+ Atividade extra"** em qualquer dia: tipo (vôlei quadra, vôlei areia, jogo/campeonato, academia extra, cardio, outra),
+  horário, duração (min), observação. Entra na linha do tempo e no %. Vôlei/jogo deixa o dia com carbo de gasto alto.
+  **Jogo/campeonato** no mesmo dia ou no dia anterior a um treino com saltos → sugere a versão reduzida.
+- **Horário só deste dia:** "Horários de hoje" permite mudar o horário de qualquer item apenas naquela data.
+- **Ciclo de 12 semanas:** continua contando nas férias. Botão **"Pausar programa"** (Ajustes) para períodos sem treinar:
+  os dias pausados não contam semanas, o treino de academia some da tela Hoje e o programa retoma da mesma semana.
