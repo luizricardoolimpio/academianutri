@@ -5,6 +5,7 @@ import { Treinos } from './ui/screens/Treinos';
 import { Dieta } from './ui/screens/Dieta';
 import { Evolucao } from './ui/screens/Evolucao';
 import { Ajustes } from './ui/screens/Ajustes';
+import { Treino } from './ui/screens/Treino';
 
 const TABS = [
   { hash: '#/hoje', label: 'Hoje', icon: '☀️' },
@@ -15,8 +16,9 @@ const TABS = [
 ];
 
 function Screen() {
-  const { path } = useRoute();
+  const { path, params } = useRoute();
   switch (path) {
+    case '/treino/:date': return <Treino date={params.date} />;
     case '/semana': return <Semana />;
     case '/treinos': return <Treinos />;
     case '/dieta': return <Dieta />;
@@ -28,7 +30,8 @@ function Screen() {
 
 export function App() {
   const { path } = useRoute();
-  const active = '#' + (path === '/' ? '/hoje' : '/' + path.split('/')[1]);
+  const first = path.split('/')[1];
+  const active = '#/' + (first === 'treino' ? 'hoje' : first === 'treinos' ? 'treinos' : first || 'hoje');
   return (
     <div class="app">
       <header class="topbar">
