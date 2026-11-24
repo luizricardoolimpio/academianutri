@@ -28,3 +28,9 @@ export interface Prescription {
   /** Contatos de salto por série (só pliometria de membros inferiores). */
   plyoContactsPerSet?: number;
 }
+
+export const SESSION_SHORT: Record<SessionId, string> = {
+  inferiorA: 'Inferior A', superiorA: 'Superior A', inferiorB: 'Inferior B', superiorB: 'Superior B',
+  mobilidade: 'Mobilidade', cardio: 'Cardio leve',
+};
+export const VOLLEY_SHORT: Partial<Record<Weekday, string>> = { 2: 'Quadra 20h', 3: 'Areia 21h', 6: 'Areia 11h + Quadra' };
